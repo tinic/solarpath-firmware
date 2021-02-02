@@ -4,6 +4,7 @@ project(solarpath-firmware C CXX ASM)
 
 set(CC_FLAGS
     -mcpu=cortex-m4 
+    -Wnull-dereference
     -mthumb
     -mfloat-abi=soft
     -fdata-sections
@@ -11,16 +12,15 @@ set(CC_FLAGS
     -flto
     -Wall
     -Wno-strict-aliasing 
+    -Wno-format
     -ffast-math)
 
 set(CXX_FLAGS 
     -Wall 
     -Wextra
-    -Wno-strict-aliasing 
     -Wdouble-promotion
     -Wshadow 
     -Wfloat-conversion 
-    -Wnull-dereference
     -Wformat=2 
     -std=c++17 
     -fno-rtti 

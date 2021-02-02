@@ -329,7 +329,6 @@ private:
 
 	bool enabled;
 	bool automode;
-	bool load_enabled;
 
 	static constexpr size_t buf_pad = 8;
 	static constexpr size_t buf_size = num_leds*3*16+buf_pad;
@@ -398,7 +397,7 @@ void i2c::update() {
 
 		uint32_t t_data = (t_val>>0 ) & 0xffff;
 		float TinK = (float)t_data / 64;
-		float TinC = TinK - 273.15;
+		float TinC = TinK - 273.15f;
 		_temperature_1 = TinC;
 
 		uint8_t th_start = 0x22;
@@ -464,7 +463,8 @@ uint32_t adc::read_channel(uint32_t channel) const {
     	Error_Handler();
     }
 
-	ADC_ChannelConfTypeDef sConfig = {0};
+	ADC_ChannelConfTypeDef sConfig;
+	memset(&sConfig, 0, sizeof(sConfig));
 
     sConfig.Channel = channel;
     sConfig.Rank = ADC_REGULAR_RANK_1;
@@ -525,12 +525,12 @@ void leds::convert(size_t led, uint16_t r, uint16_t g, uint16_t b) {
 		*ptr++ = 0;
 	}
 	for (uint32_t d = 0; d < num_leds; d++) {
-		auto convert_channel = [=] (uint16_t v, uint8_t *ptr) {
+		auto convert_channel = [=] (uint16_t v, uint8_t *out) {
 			for (uint32_t c = 0 ; c < 16; c++) {
 				if (v&(1UL<<15)) {
-					*ptr++ = 0b11110000;
+					*out++ = 0b11110000;
 				} else {
-					*ptr++ = 0b11000000;
+					*out++ = 0b11000000;
 				}
 				v<<=1;
 			}
@@ -559,7 +559,6 @@ void leds::push() {
 		HAL_GPIO_WritePin(LOAD_ENABLE_GPIO_Port, LOAD_ENABLE_Pin, GPIO_PIN_SET);
 		HAL_SPI_Transmit_DMA(&hspi1, &buf[0][0], buf_size);
 		HAL_SPI_Transmit_DMA(&hspi2, &buf[1][0], buf_size);
-		load_enabled = true;
 	};
 
 	auto off = [=] () mutable {
@@ -568,18 +567,17 @@ void leds::push() {
 		HAL_SPI_Transmit_DMA(&hspi1, &ones[0], sizeof(ones));
 		HAL_SPI_Transmit_DMA(&hspi2, &ones[0], sizeof(ones));
 		HAL_GPIO_WritePin(LOAD_ENABLE_GPIO_Port, LOAD_ENABLE_Pin, GPIO_PIN_RESET);
-		load_enabled = false;
 	};
 
 	if (automode && enabled) {
-		if (load_enabled) {
-			if (adc::instance().solar_voltage() < (auto_threshold_voltage - 0.050)) {
+		if (HAL_GPIO_ReadPin(LOAD_ENABLE_GPIO_Port, LOAD_ENABLE_Pin) == GPIO_PIN_SET) {
+			if (adc::instance().solar_voltage() < (auto_threshold_voltage - 0.050f)) {
 				off();
 			} else {
 				on();
 			}
 		} else {
-			if (adc::instance().solar_voltage() > (auto_threshold_voltage + 0.050)) {
+			if (adc::instance().solar_voltage() > (auto_threshold_voltage + 0.050f)) {
 				on();
 			} else {
 				off();
