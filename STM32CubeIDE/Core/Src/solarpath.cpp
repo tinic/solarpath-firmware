@@ -592,6 +592,46 @@ void leds::push() {
 	}
 }
 
+class motion {
+public:
+	static motion &instance();
+
+	void update();
+	bool isActiveAndClear();
+
+private:
+	bool _active;
+	void init();
+};
+
+
+motion &motion::instance() {
+	static motion i;
+	static bool init = false;
+	if (!init) {
+		init = true;
+		i.init();
+	}
+	return i;
+}
+
+void motion::init() {
+	memset(this, 0, sizeof(motion));
+	update();
+}
+
+void motion::update() {
+	// TODO
+}
+
+bool motion::isActiveAndClear() {
+	if (_active) {
+		_active = false;
+		return true;
+	}
+	return false;
+}
+
 __attribute__((optimize("Os")))
 const uint8_t *encode_packet(uint8_t *len) {
 	static OutBitStream bitstream;
@@ -608,8 +648,7 @@ const uint8_t *encode_packet(uint8_t *len) {
 	bitstream.PutBits(hm, 6);
 
 	bitstream.PutBits(HAL_GPIO_ReadPin(PGOOD_GPIO_Port, PGOOD_Pin) == GPIO_PIN_SET ? 1 : 0, 1);
-
-	bitstream.PutBits(1, 1);
+	bitstream.PutBits(motion::instance().isActiveAndClear() ? 1 : 0, 1);
 
 	bitstream.FlushBits();
 
