@@ -158,21 +158,8 @@ void LoRaWAN_Init(void)
   MibRequestConfirm_t mibReq;
   memset(&mibReq, 0, sizeof(mibReq));
 
-  // JoinEUI
-  static const uint8_t joinEUI[8] = { 0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x03, 0xB4, 0xEA };
-
-  printf("JoinEUI: ");
-  for(size_t c = 0; c < 8; c++) {
-	  printf("%02x",joinEUI[c]);
-  }
-  printf("\r\n");
-
-  mibReq.Type = MIB_JOIN_EUI;
-  mibReq.Param.JoinEui = joinEUI;
-  LoRaMacMibSetRequestConfirm(&mibReq);
-
   // AppKey
-  static uint8_t appKey[16];
+  uint8_t appKey[16];
   memcpy(appKey, devEui, 8);
   memcpy(appKey+8, devEui, 8);
 
