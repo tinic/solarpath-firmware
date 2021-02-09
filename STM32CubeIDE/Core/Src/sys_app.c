@@ -83,7 +83,7 @@ void SystemApp_Init(void)
   /*Init low power manager*/
   UTIL_LPM_Init();
   /* Disable Stand-by mode */
-  UTIL_LPM_SetOffMode((1 << CFG_LPM_APPLI_Id), UTIL_LPM_DISABLE);
+  UTIL_LPM_SetOffMode((1 << CFG_LPM_APPLI_Id), UTIL_LPM_ENABLE);
 
   /* USER CODE END SystemApp_Init_1 */
 }
