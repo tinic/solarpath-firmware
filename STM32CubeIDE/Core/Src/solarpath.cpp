@@ -11,7 +11,6 @@
 extern "C" ADC_HandleTypeDef hadc;
 extern "C" I2C_HandleTypeDef hi2c2;
 extern "C" SPI_HandleTypeDef hspi1;
-extern "C" SPI_HandleTypeDef hspi2;
 
 class InBitStream {
   public:
@@ -558,14 +557,12 @@ void leds::push() {
 	auto on = [=] () mutable {
 		HAL_GPIO_WritePin(LOAD_ENABLE_GPIO_Port, LOAD_ENABLE_Pin, GPIO_PIN_SET);
 		HAL_SPI_Transmit_DMA(&hspi1, &buf[0][0], buf_size);
-		HAL_SPI_Transmit_DMA(&hspi2, &buf[1][0], buf_size);
 	};
 
 	auto off = [=] () mutable {
 		HAL_GPIO_WritePin(LOAD_ENABLE_GPIO_Port, LOAD_ENABLE_Pin, GPIO_PIN_SET);
 		uint8_t ones[16]; memset(ones, 0xFF, sizeof(ones));
 		HAL_SPI_Transmit_DMA(&hspi1, &ones[0], sizeof(ones));
-		HAL_SPI_Transmit_DMA(&hspi2, &ones[0], sizeof(ones));
 		HAL_GPIO_WritePin(LOAD_ENABLE_GPIO_Port, LOAD_ENABLE_Pin, GPIO_PIN_RESET);
 	};
 

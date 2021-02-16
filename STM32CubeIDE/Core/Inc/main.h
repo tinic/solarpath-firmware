@@ -78,8 +78,6 @@ void Error_Handler(void);
 #define RF_CTRL_2_GPIO_Port GPIOA
 #define RF_CTRL_1_Pin GPIO_PIN_9
 #define RF_CTRL_1_GPIO_Port GPIOA
-#define LED1_Pin GPIO_PIN_10
-#define LED1_GPIO_Port GPIOA
 #define SOLAR_Pin GPIO_PIN_15
 #define SOLAR_GPIO_Port GPIOA
 void   MX_ADC_Init(void);
