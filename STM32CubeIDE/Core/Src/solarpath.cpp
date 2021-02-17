@@ -383,13 +383,23 @@ void i2c::update() {
 		_temperature_0 = ( ( ( (temp_value[0] << 8) | (temp_value[1] << 0) ) & 0xFFF) ) / 16.0f ;
 	}
 
-	const uint8_t en210_address = 0b10000110;
-	if (HAL_I2C_IsDeviceReady(&hi2c2, en210_address, 8, HAL_MAX_DELAY) == HAL_OK) {
+	const uint8_t ens210_address = 0b10000110;
+	if (HAL_I2C_IsDeviceReady(&hi2c2, ens210_address, 8, HAL_MAX_DELAY) == HAL_OK) {
+		static bool reset = false;
+		if (!reset) {
+			reset = true;
+			uint8_t th_reset[] = { 0x10, 0x80 };
+			HAL_I2C_Master_Transmit(&hi2c2, ens210_address, th_reset, 2, HAL_MAX_DELAY);
+			HAL_Delay(2);
+			uint8_t th_normal[] = { 0x10, 0x00 };
+			HAL_I2C_Master_Transmit(&hi2c2, ens210_address, th_normal, 2, HAL_MAX_DELAY);
+			HAL_Delay(2);
+		}
 
 		uint8_t th_read = 0x30;
 		uint8_t th_data[6] = { 0, 0, 0, 0, 0, 0 };
-		HAL_I2C_Master_Transmit(&hi2c2, en210_address, (uint8_t *)&th_read, sizeof(th_read), HAL_MAX_DELAY);
-		HAL_I2C_Master_Receive(&hi2c2, en210_address, (uint8_t *)&th_data, sizeof(th_data), HAL_MAX_DELAY);
+		HAL_I2C_Master_Transmit(&hi2c2, ens210_address, (uint8_t *)&th_read, sizeof(th_read), HAL_MAX_DELAY);
+		HAL_I2C_Master_Receive(&hi2c2, ens210_address, (uint8_t *)&th_data, sizeof(th_data), HAL_MAX_DELAY);
 
 		uint32_t t_val = (th_data[2]<<16) + (th_data[1]<<8) + (th_data[0]<<0);
 		uint32_t h_val = (th_data[5]<<16) + (th_data[4]<<8) + (th_data[3]<<0);
@@ -399,14 +409,12 @@ void i2c::update() {
 		float TinC = TinK - 273.15f;
 		_temperature_1 = TinC;
 
-		uint8_t th_start = 0x22;
-		uint8_t th_select = 0x03;
-		HAL_I2C_Master_Transmit(&hi2c2, en210_address, (uint8_t *)&th_start, sizeof(th_start), HAL_MAX_DELAY);
-		HAL_I2C_Master_Transmit(&hi2c2, en210_address, (uint8_t *)&th_select, sizeof(th_select), HAL_MAX_DELAY);
-
 		uint32_t h_data = (h_val>>0 ) & 0xffff;
 		float H = (float)h_data/51200;
 		_humidity = H;
+
+		uint8_t th_start_single[] = { 0x21, 0x00, 0x03 };
+		HAL_I2C_Master_Transmit(&hi2c2, ens210_address, (uint8_t *)&th_start_single, sizeof(th_start_single), HAL_MAX_DELAY);
 	}
 }
 
