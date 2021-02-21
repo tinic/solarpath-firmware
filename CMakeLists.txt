@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
+# STM32WLE, STM32WLEx, STM32WLE5x, STM32WLE5CCUX
+
 project(solarpath-firmware C CXX ASM)
 
 set(CC_FLAGS
